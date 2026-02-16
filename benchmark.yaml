@@ -1,0 +1,192 @@
+## ------------------------------------------------------------------------------
+## benchmark shortname
+## ------------------------------------------------------------------------------
+id: shortread_germline_structural_variant_benchmark
+
+## ------------------------------------------------------------------------------
+## benchmark description
+## ------------------------------------------------------------------------------
+description: Short read germline structural variant benchmarking
+
+## ------------------------------------------------------------------------------
+## Benchmark version. `1.0`.
+## ------------------------------------------------------------------------------
+version: 1.0
+
+## ------------------------------------------------------------------------------
+## Benchmark builder/contact person
+## ------------------------------------------------------------------------------
+benchmarker: "Monica Aguila i Sans, monica.aguila.i.sans@regionh.dk"
+
+## ------------------------------------------------------------------------------
+## Benchmark YAML schema/specification version. Currently `0.01`.
+## ------------------------------------------------------------------------------
+benchmark_yaml_spec: 0.01
+
+## ------------------------------------------------------------------------------
+## The software backend used to run the benchmark
+## ------------------------------------------------------------------------------
+software_backend: apptainer
+
+## ------------------------------------------------------------------------------
+## Software environment recipes associated to this benchmark.
+## ------------------------------------------------------------------------------
+software_environments:
+  Dysgu:
+    description: "Dysgu"
+    apptainer: ./containers/dysgu_1.6.2.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Delly:
+    description: "Delly"
+    apptainer: ./containers/delly_1.1.3__v1.0__.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Manta:
+    description: "Manta"
+    apptainer: ./containers/manta_1.6.0_bcftools.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Svaba:
+    description: "Svaba"
+    apptainer: ./containers/svaba_1.2.0__v2.0__.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Tiddit:
+    description: "Tiddit"
+    apptainer: ./containers/tiddit_3.6.1__v1.0__.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Cnvpytor:
+    description: "Cnvpytor"
+    apptainer: ./containers/cnvpytor_1.3.1__v1.0__.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Truvari:
+    description: "Truvari v5.3.0"
+    apptainer: ./containers/truvari/truvari_5.3.0_python_3.10_python_3.12__v1.0__.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+  Bcftools-samtools:
+    description: "Bcftools v1.22 with Samtools v1.22"
+    apptainer: ./containers/samtools/bcftools_1.22_samtools_1.22-htslib_1.22-python3.12__v2.0__.sif
+    conda: ./fake_envs/R.yml  # This is expected to be present, but it can just be an empty file
+
+stages:
+  - id: data
+    modules:
+      - id: NA12878
+        name: "Collect input bams"
+        software_environment: "Bcftools-samtools"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-data-input.git
+          commit: 6790de9
+      - id: NA12879
+        name: "Collect input bams"
+        software_environment: "Bcftools-samtools"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-data-input.git
+          commit: 6790de9
+      - id: NA12881
+        name: "Collect input bams"
+        software_environment: "Bcftools-samtools"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-data-input.git
+          commit: 6790de9
+      - id: NA12882
+        name: "Collect input bams"
+        software_environment: "Bcftools-samtools"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-data-input.git
+          commit: 6790de9
+    outputs:
+      - id: data.bam
+        path: "{dataset}.bam"
+      - id: data.bam.bai
+        path: "{dataset}.bam.bai"
+      - id: data.cram
+        path: "{dataset}.cram"
+      - id: data.crai
+        path: "{dataset}.crai"
+      - id: data.truthset
+        path: "{dataset}.truthset.vcf.gz"
+      - id: data.truthset.tbi
+        path: "{dataset}.truthset.vcf.gz.tbi"
+      - id: data.reference
+        path: "{dataset}.reference.fasta"
+      - id: data.reference.fai
+        path: "{dataset}.reference.fasta.fai"
+
+  - id: variant_calling
+    modules:
+      - id: dysgu
+        name: "Variant calling with dysgu"
+        software_environment: "Dysgu"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-variant-calling-dysgu.git
+          commit: 28e2ae5
+      - id: delly
+        name: "Variant calling with delly"
+        software_environment: "Delly"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-variant-calling-delly.git
+          commit: 03a1a23
+      - id: svaba
+        name: "Variant calling with svaba"
+        software_environment: "Svaba"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-variant-calling-svaba.git
+          commit: 05e7ea8
+      - id: tiddit
+        name: "Variant calling with tiddit"
+        software_environment: "Tiddit"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-variant-calling-tiddit.git
+          commit: 83875ae
+      - id: manta
+        name: "Variant calling with manta"
+        software_environment: "Manta"
+        repository:
+          url: ./repos/variant-calling-manta
+          commit: 3d4683a 
+    inputs:
+      - entries:
+        - data.bam
+        - data.reference
+    outputs:
+      - id: variant_calling.vcfs
+        path: "{dataset}.vcf"
+
+  - id: vcf-compress
+    modules:
+      - id: Compress
+        name: "Compress"
+        software_environment: "Bcftools-samtools"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-vcf-compress.git
+          commit: 21a408f
+    inputs:
+      - entries: 
+        - variant_calling.vcfs
+        - data.reference
+    outputs:
+      - id: variant_calling.vcfs.gz
+        path: "{dataset}.vcf.gz"
+
+  - id: truvari
+    modules:
+      - id: Truvari
+        name: "Truvari"
+        software_environment: "Truvari"
+        repository:
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-truvari-bench.git
+          commit: 3ea90a1
+    inputs:
+      - entries: 
+        - variant_calling.vcfs.gz
+        - data.truthset
+        - data.reference
+    outputs:
+      - id: variant_calling_metrics.fp
+        path: "{dataset}.fp.vcf.gz"
+      - id: variant_calling_metrics.fn
+        path: "{dataset}.fn.vcf.gz"
+      - id: variant_calling_metrics.tp
+        path: "{dataset}.tp-base.vcf.gz"
+      - id: variant_calling_metrics.tp.tbi
+        path: "{dataset}.tp-base.vcf.gz.tbi"
+      - id: variant_calling_metrics.summary
+        path: "{dataset}.summary.json"
