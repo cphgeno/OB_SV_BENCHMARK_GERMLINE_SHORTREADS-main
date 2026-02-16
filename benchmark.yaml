@@ -140,8 +140,8 @@ stages:
         name: "Variant calling with manta"
         software_environment: "Manta"
         repository:
-          url: ./repos/variant-calling-manta
-          commit: 3d4683a 
+          url: https://github.com/cphgeno/OB_SV_BENCHMARK_GERMLINE_SHORTREADS-variant-calling-manta.git
+          commit: 110fddf
     inputs:
       - entries:
         - data.bam
